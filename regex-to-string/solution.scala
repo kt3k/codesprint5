@@ -30,9 +30,11 @@ object State extends Enumeration {
     val Start, Other, End = Value
 }
 
-class Node(state: State.Value, char: Char = '_') {
+class Node(state0: State.Value, char: Char = '_') {
 
     Global.counter += 1
+
+    var state = state0
 
     val id = Global.counter
 
@@ -44,7 +46,7 @@ class Node(state: State.Value, char: Char = '_') {
         this
     }
 
-    override def toString = "Node(id=" + id + ",nexts=" + nexts + ")"
+    override def toString = "Node(id=" + id + ",nexts=" + nexts.map(_.id) + ")"
 
 }
 
@@ -204,7 +206,15 @@ object Parser {
     }
 
     def interpretStr(str: String): Node = {
-        null
+
+        val startNode = new Node(State.Start)
+        val (parsed, x) = Parser.parse(str.toList)
+
+        val endNode = Parser.interpret(parsed, startNode)
+
+        endNode.state = State.End
+
+        startNode
     }
 
 }
@@ -230,4 +240,10 @@ def testInterpret() {
     println(n)
 }
 
-testInterpret()
+def testInterpretStr() {
+    val x = Parser.interpretStr("abcd(efg|hif)*klmn")
+
+    println(x)
+}
+
+testInterpretStr()

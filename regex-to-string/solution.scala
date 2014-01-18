@@ -7,7 +7,9 @@ object Solution {
 
         val n: Int = readLine().toInt
 
-        println(n)
+        if (DEBUG) {
+            println(n)
+        }
 
         val re: String = readLine()
 
@@ -15,13 +17,17 @@ object Solution {
 
         val x = searchPattern(startNode, List(), n)
 
-        println(x)
+        println(x.mkString(""))
 
     }
 
     def searchPattern(node: Node, pattern: List[Char], size: Int): List[Char] = {
 
         if (patternCache.contains(Tuple2(node.id, pattern.mkString("")))) {
+            if (DEBUG) {
+                println("cache hit")
+                println(node, pattern.mkString(""))
+            }
             return null
         }
 
@@ -30,22 +36,28 @@ object Solution {
         var result = pattern
 
         if (DEBUG) {
-            println(pattern.reverse)
-            println(node.id)
-            println(node.state)
+            println(result.reverse)
+            println(node)
         }
 
         if (node.char != '_') {
             result = node.char :: pattern
         }
 
+        if (DEBUG) {
+            println(result.reverse)
+            println(result.length)
+        }
+
         if (result.length == size && node.state == State.End) {
             return result
+
         } else if (result.length > size) {
             return null
+
         } else {
             if (node.nexts.length == 1) {
-                return searchPattern(node.nexts.head, pattern, size)
+                return searchPattern(node.nexts.head, result, size)
             }
 
             for (node: Node <- node.nexts) {
@@ -64,7 +76,7 @@ object Solution {
 
 var patternCache: Set[Tuple2[Int, String]] = Set[Tuple2[Int, String]]()
 
-val DEBUG = true
+val DEBUG = false
 
 object Global {
     var counter = 0
@@ -91,7 +103,7 @@ class Node(state0: State.Value, char0: Char = '_') {
         this
     }
 
-    override def toString = "Node(id=" + id + ",nexts=" + nexts.map(_.id) + ")"
+    override def toString = "Node(id=" + id + ",char=" + char + ",state=" + state + ",nexts=" + nexts.map(_.id) + ")"
 
 }
 
@@ -163,11 +175,6 @@ object Parser {
         var seq = seq0
         var node = node0
 
-        if (DEBUG) {
-            println(seq)
-            println(node)
-        }
-
         while (!seq.isEmpty) {
 
             if (DEBUG) {
@@ -179,18 +186,27 @@ object Parser {
 
                 case '|' :: tail => {
                     val endNode = new Node(State.Other)
-                    println('|')
-                    println(endNode.id)
+
+                    if (DEBUG) {
+                        println('|')
+                        println(endNode.id)
+                    }
 
                     val alts = tail.head
                     seq = tail.tail
 
                     alts match {
-                        case alts: List[Any] => {
-                            for (altSeq <- alts) {
+                        case alts0: List[Any] => {
+                            for (altSeq <- alts0) {
                                 altSeq match {
                                     case altSeq: List[Any] => {
                                         val altNode = new Node(State.Other)
+
+                                        if (DEBUG) {
+                                            println("altSeq")
+                                            println(altNode.id)
+                                        }
+
                                         node.appendNext(altNode)
                                         interpret(altSeq, altNode).appendNext(endNode)
                                     }
@@ -203,12 +219,14 @@ object Parser {
 
                     node = endNode
                 }
-
                 case '*' :: tail => {
                     val t = tail.head
                     seq = tail.tail
-                    println('*')
-                    println(seq)
+
+                    if (DEBUG) {
+                        println('*')
+                        println(seq)
+                    }
 
                     val inNode = new Node(State.Other)
                     val outNode = new Node(State.Other)
@@ -226,9 +244,17 @@ object Parser {
                     node.appendNext(outNode)
                     node.appendNext(inNode)
 
+                    if (DEBUG) {
+                        println("*'s previous node is:")
+                        println(node)
+                        println("*'s out node is:")
+                        println(outNode)
+                        println("*'s in node is:")
+                        println(inNode)
+                    }
+
                     node = outNode
                 }
-
                 case head :: tail => {
 
                     head match {
@@ -249,6 +275,11 @@ object Parser {
                 }
                 case nil => nil
             }
+        }
+
+        if (DEBUG) {
+            println("endNode.id is:")
+            println(node.id)
         }
 
         node

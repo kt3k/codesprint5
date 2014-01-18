@@ -7,7 +7,7 @@ object Solution {
 
         val n: Int = readLine().toInt
 
-        if (DEBUG) {
+        if (X.DEBUG) {
             println(n)
         }
 
@@ -17,25 +17,29 @@ object Solution {
 
         val x = searchPattern(startNode, List(), n)
 
-        println(x.mkString(""))
+        if (x != null) {
+            println(x.reverse.mkString(""))
+        } else {
+            println("NIL")
+        }
 
     }
 
     def searchPattern(node: Node, pattern: List[Char], size: Int): List[Char] = {
 
-        if (patternCache.contains(Tuple2(node.id, pattern.mkString("")))) {
-            if (DEBUG) {
+        if (Solution.patternCache.contains(Tuple2(node.id, pattern.mkString("")))) {
+            if (X.DEBUG) {
                 println("cache hit")
                 println(node, pattern.mkString(""))
             }
             return null
         }
 
-        patternCache += Tuple2(node.id, pattern.mkString(""))
+        Solution.patternCache += Tuple2(node.id, pattern.mkString(""))
         
         var result = pattern
 
-        if (DEBUG) {
+        if (X.DEBUG) {
             println(result.reverse)
             println(node)
         }
@@ -44,7 +48,7 @@ object Solution {
             result = node.char :: pattern
         }
 
-        if (DEBUG) {
+        if (X.DEBUG) {
             println(result.reverse)
             println(result.length)
         }
@@ -65,18 +69,22 @@ object Solution {
                 val searchResult = searchPattern(node, result, size)
 
                 if (searchResult != null) {
-                    return searchResult.reverse
+                    return searchResult
                 }
             }
         }
 
         null
     }
+
+    var patternCache: Set[Tuple2[Int, String]] = Set[Tuple2[Int, String]]()
+
 }
 
-var patternCache: Set[Tuple2[Int, String]] = Set[Tuple2[Int, String]]()
+object X {
+    val DEBUG = false
+}
 
-val DEBUG = false
 
 object Global {
     var counter = 0
@@ -118,7 +126,7 @@ object Parser {
 
         while (!chars.isEmpty) {
 
-            if (DEBUG) {
+            if (X.DEBUG) {
                 println(chars)
                 println(seq)
             }
@@ -177,7 +185,7 @@ object Parser {
 
         while (!seq.isEmpty) {
 
-            if (DEBUG) {
+            if (X.DEBUG) {
                 println(seq)
                 println(node)
             }
@@ -187,7 +195,7 @@ object Parser {
                 case '|' :: tail => {
                     val endNode = new Node(State.Other)
 
-                    if (DEBUG) {
+                    if (X.DEBUG) {
                         println('|')
                         println(endNode.id)
                     }
@@ -202,7 +210,7 @@ object Parser {
                                     case altSeq: List[Any] => {
                                         val altNode = new Node(State.Other)
 
-                                        if (DEBUG) {
+                                        if (X.DEBUG) {
                                             println("altSeq")
                                             println(altNode.id)
                                         }
@@ -223,7 +231,7 @@ object Parser {
                     val t = tail.head
                     seq = tail.tail
 
-                    if (DEBUG) {
+                    if (X.DEBUG) {
                         println('*')
                         println(seq)
                     }
@@ -244,7 +252,7 @@ object Parser {
                     node.appendNext(outNode)
                     node.appendNext(inNode)
 
-                    if (DEBUG) {
+                    if (X.DEBUG) {
                         println("*'s previous node is:")
                         println(node)
                         println("*'s out node is:")
@@ -277,7 +285,7 @@ object Parser {
             }
         }
 
-        if (DEBUG) {
+        if (X.DEBUG) {
             println("endNode.id is:")
             println(node.id)
         }
@@ -300,7 +308,7 @@ object Parser {
 }
 
 
-//Solution.main(args)
+/*
 
 def testNode() = {
     val node = new Node(State.Start, 'c')
@@ -325,7 +333,8 @@ def testInterpretStr() {
 
     println(x)
 }
+*/
 
 //testInterpretStr()
 
-Solution.main(args)
+//Solution.main(args)

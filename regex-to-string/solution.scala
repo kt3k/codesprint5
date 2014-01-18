@@ -11,14 +11,58 @@ object Solution {
 
         val re: String = readLine()
 
-        re.split("").foreach(println(_))
+        val startNode: Node = Parser.interpretStr(re)
+
+        val x = searchPattern(startNode, List(), n)
+
+        println(x)
 
     }
 
-    def searchPattern(node: Node, pattern: String, size: Int): String = {
+    def searchPattern(node: Node, pattern: List[Char], size: Int): List[Char] = {
+
+        if (patternCache.contains(Tuple2(node.id, pattern.mkString("")))) {
+            return null
+        }
+
+        patternCache += Tuple2(node.id, pattern.mkString(""))
+        
+        var result = pattern
+
+        if (DEBUG) {
+            println(pattern.reverse)
+            println(node.id)
+            println(node.state)
+        }
+
+        if (node.char != '_') {
+            result = node.char :: pattern
+        }
+
+        if (result.length == size && node.state == State.End) {
+            return result
+        } else if (result.length > size) {
+            return null
+        } else {
+            if (node.nexts.length == 1) {
+                return searchPattern(node.nexts.head, pattern, size)
+            }
+
+            for (node: Node <- node.nexts) {
+
+                val searchResult = searchPattern(node, result, size)
+
+                if (searchResult != null) {
+                    return searchResult.reverse
+                }
+            }
+        }
+
         null
     }
 }
+
+var patternCache: Set[Tuple2[Int, String]] = Set[Tuple2[Int, String]]()
 
 val DEBUG = true
 
@@ -30,11 +74,12 @@ object State extends Enumeration {
     val Start, Other, End = Value
 }
 
-class Node(state0: State.Value, char: Char = '_') {
+class Node(state0: State.Value, char0: Char = '_') {
 
     Global.counter += 1
 
     var state = state0
+    var char = char0
 
     val id = Global.counter
 
@@ -134,6 +179,8 @@ object Parser {
 
                 case '|' :: tail => {
                     val endNode = new Node(State.Other)
+                    println('|')
+                    println(endNode.id)
 
                     val alts = tail.head
                     seq = tail.tail
@@ -160,6 +207,8 @@ object Parser {
                 case '*' :: tail => {
                     val t = tail.head
                     seq = tail.tail
+                    println('*')
+                    println(seq)
 
                     val inNode = new Node(State.Other)
                     val outNode = new Node(State.Other)
@@ -168,8 +217,8 @@ object Parser {
                         case c: Char => {
                             Parser.interpret(List(c), inNode).appendNext(outNode).appendNext(inNode)
                         }
-                        case t: List[Any] => {
-                            Parser.interpret(t, inNode).appendNext(outNode).appendNext(inNode)
+                        case x: List[Any] => {
+                            Parser.interpret(x, inNode).appendNext(outNode).appendNext(inNode)
                         }
                         case nil => nil
                     }
@@ -190,7 +239,7 @@ object Parser {
                             node = charNode
                         }
                         case c: List[Any] => {
-                            node = Parser.interpret(tail, node)
+                            node = Parser.interpret(c, node)
                         }
                         case nil => {
                         }
@@ -246,4 +295,6 @@ def testInterpretStr() {
     println(x)
 }
 
-testInterpretStr()
+//testInterpretStr()
+
+Solution.main(args)

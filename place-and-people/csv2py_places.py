@@ -9,8 +9,8 @@ for line in open('counties.csv'):
     a = line[1].strip('"')
     b = line[3].strip('"')
 
-    names.add(a)
-    names.add(b)
+    names.add(a.lower())
+    names.add(b.lower())
 
 for line in open('places.csv'):
     line = line.split(',')
@@ -18,7 +18,7 @@ for line in open('places.csv'):
     a = line[1].strip('"')
     b = line[2].strip('"')
 
-    names.add(a)
-    names.add(b)
+    names.add(a.lower())
+    names.add(b.lower())
 
 print names
